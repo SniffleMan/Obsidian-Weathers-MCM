@@ -9,7 +9,8 @@ ImagespaceModifier Property ObsidianSunlightFix Auto
 GlobalVariable Property ObsidianSeasonsFXGlobal Auto  ; Int
 GlobalVariable Property ObsidianSunlightFixGlobal Auto  ; Int
 ObsidianSeasons Property OSeasons Auto
-
+Actor Property PlayerRef Auto
+Spell Property ConfigSpell Auto
 
 
 String[] _menuEntries
@@ -53,6 +54,7 @@ Event OnPageReset(String a_page)
 		AddToggleOptionST("Obsidian_SeasonsFX_B", "$Obsidian_ToggleOption_SeasonsFX", ObsidianSeasonsFXGlobal.GetValue() As Bool)
 		AddTextOptionST("Obsidian_Load_T", "$LOAD", "")
 		AddToggleOptionST("Obsidian_SunlightFix_B", "$Obsidian_ToggleOption_SunlightFix", ObsidianSunlightFixGlobal.GetValue() As Bool)
+		AddTextOptionST("Obsidian_RemoveSpell_T", "$Obsidian_TextOption_RemoveSpell", "")
 	EndIf
 EndEvent
 
@@ -159,6 +161,24 @@ State Obsidian_SunlightFix_B
 
 	Event OnHighlightST()
 		SetInfoText("$Obsidian_InfoText_SunlightFix")
+	EndEvent
+EndState
+
+
+State Obsidian_RemoveSpell_T
+	Event OnSelectST()
+		If (ConfigSpell && playerRef.RemoveSpell(ConfigSpell))
+			ShowMessage("$Obsidian_RemoveSpell_Success", False, "$OK")
+		Else
+			ShowMessage("$Obsidian_RemoveSpell_Failure", False, "$OK")
+		EndIf
+	EndEvent
+
+	Event OnDefaultST()
+	EndEvent
+
+	Event OnHighlightST()
+		SetInfoText("$Obsidian_InfoText_RemoveSpell")
 	EndEvent
 EndState
 

@@ -4,9 +4,9 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Papyrus: SSE",
+			"label": "Papyrus: SSE - Build All",
 			"type": "shell",
-			"command": ".\\powershell\\build.ps1",
+			"command": ".\\powershell\\build-all.ps1",
 			"group": {
 				"kind": "build",
 				"isDefault": true
@@ -15,6 +15,17 @@
 				"reveal": "always",
 				"panel": "dedicated"
 			}
+		},
+		{
+			"label": "Papyrus: SSE - Build Current File",
+			"type": "shell",
+			"command": ".\\powershell\\build-current.ps1 -filePath ${file}",
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"problemMatcher": []
 		}
 	]
 }
