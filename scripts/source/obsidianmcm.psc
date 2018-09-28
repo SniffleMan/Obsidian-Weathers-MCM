@@ -11,6 +11,7 @@ GlobalVariable Property ObsidianSunlightFixGlobal Auto  ; Int
 ObsidianSeasons Property OSeasons Auto
 
 
+
 String[] _menuEntries
 Int _menuEntriesIdx = 0
 
@@ -45,16 +46,18 @@ EndEvent
 ; a_page - The name of the the current page, or "" if no page is selected.
 Event OnPageReset(String a_page)
 	If (a_page == "$Obsidian_pages0")
-		SetCursorFillMode(TOP_TO_BOTTOM)
+		SetCursorFillMode(LEFT_TO_RIGHT)
 		
-		AddMenuOptionST("Filters_M", "$Obsidian_MenuOption_Filters", GetActiveFilter())
-		AddToggleOptionST("SeasonsFX_B", "$Obsidian_ToggleOption_SeasonsFX", ObsidianSeasonsFXGlobal.GetValue() As Bool)
-		AddToggleOptionST("SunlightFix_B", "$Obsidian_ToggleOption_SunlightFix", ObsidianSunlightFixGlobal.GetValue() As Bool)
+		AddMenuOptionST("Obsidian_Filters_M", "$Obsidian_MenuOption_Filters", GetActiveFilter())
+		AddTextOptionST("Obsidian_Save_T", "$SAVE", "")
+		AddToggleOptionST("Obsidian_SeasonsFX_B", "$Obsidian_ToggleOption_SeasonsFX", ObsidianSeasonsFXGlobal.GetValue() As Bool)
+		AddTextOptionST("Obsidian_Load_T", "$LOAD", "")
+		AddToggleOptionST("Obsidian_SunlightFix_B", "$Obsidian_ToggleOption_SunlightFix", ObsidianSunlightFixGlobal.GetValue() As Bool)
 	EndIf
 EndEvent
 
 
-State Filters_M
+State Obsidian_Filters_M
 	Event OnMenuOpenST()
 		SetMenuDialogStartIndex(_menuEntriesIdx)
 		SetMenuDialogDefaultIndex(0)
@@ -88,7 +91,21 @@ State Filters_M
 EndState
 
 
-State SeasonsFX_B
+State Obsidian_Save_T
+	Event OnSelectST()
+		BeginSavePreset()
+	EndEvent
+
+	Event OnDefaultST()
+	EndEvent
+
+	Event OnHighlightST()
+		SetInfoText("$Obsidian_InfoText_Save")
+	EndEvent
+EndState
+
+
+State Obsidian_SeasonsFX_B
 	Event OnSelectST()
 		ToggleBool(ObsidianSeasonsFXGlobal)
 		OSeasons.SeasonsFX = ObsidianSeasonsFXGlobal.GetValue() As Bool
@@ -109,7 +126,21 @@ State SeasonsFX_B
 EndState
 
 
-State SunlightFix_B
+State Obsidian_Load_T
+	Event OnSelectST()
+		BeginLoadPreset()
+	EndEvent
+
+	Event OnDefaultST()
+	EndEvent
+
+	Event OnHighlightST()
+		SetInfoText("$Obsidian_InfoText_Load")
+	EndEvent
+EndState
+
+
+State Obsidian_SunlightFix_B
 	Event OnSelectST()
 		ToggleBool(ObsidianSunlightFixGlobal)
 		If (ObsidianSunlightFixGlobal.GetValue() As Bool)
@@ -136,8 +167,6 @@ EndState
 ; RETURN - The static version of this script.
 ; History:
 ; 1 - Initial Release (v1.0.0)
-; 2 - Added support for cyclic saving (v.1.2.0)
-; 3 - Fixed bug in name to hex conversion (v1.2.1)
 Int Function GetVersion()
 	Return 1
 EndFunction
@@ -171,4 +200,74 @@ Function Clean()
 	ObsidianFantasy.Remove()
 	ObsidianBleakPreset.Remove()
 	ObsidianCold.Remove()
+EndFunction
+
+
+; Saves the current preset using FISS
+Function BeginSavePreset()
+	If (!ShowMessage("$Obsidian_Save_AreYouSure") || !ShowMessage("$Obsidian_PleaseWait"))
+		Return
+	EndIf
+
+	FISSInterface fiss = FISSFactory.getFISS()
+	If (!fiss)
+		ShowMessage("$Obsidian_FISSNotFound", False, "$OK")
+		Return
+	EndIf
+
+	fiss.beginSave("ObsidianWeathersMCM.xml", "Obsidian Weathers MCM")
+
+	fiss.saveInt("Obsidian_Filters_M", _menuEntriesIdx)
+	fiss.saveBool("Obsidian_SeasonsFX_B", ObsidianSeasonsFXGlobal.GetValue() As Bool)
+	fiss.saveBool("Obsidian_SunlightFix_B", ObsidianSunlightFixGlobal.GetValue() As Bool)
+
+	String saveResult = fiss.endSave()
+
+	If (saveResult != "")
+		ShowMessage("$Obsidian_Save_Failure", False, "$OK")
+	Else
+		ShowMessage("$Obsidian_Save_Success", False, "$OK")
+	EndIf
+EndFunction
+
+
+; Loads the saved preset using FISS
+Function BeginLoadPreset()
+	If (!ShowMessage("$Obsidian_Load_AreYouSure") || !ShowMessage("$Obsidian_PleaseWait"))
+		Return
+	EndIf
+
+	FISSInterface fiss = FISSFactory.getFISS()
+	If (!fiss)
+		ShowMessage("$Obsidian_FISSNotFound", False, "$OK")
+		Return
+	EndIf
+
+	fiss.beginLoad("ObsidianWeathersMCM.xml")
+
+	String prevState = GetState()
+	Bool b
+
+	GotoState("Obsidian_Filters_M")
+	OnMenuAcceptST(fiss.loadInt("Obsidian_Filters_M"))
+
+	GotoState("Obsidian_SeasonsFX_B")
+	b = fiss.loadBool("Obsidian_SeasonsFX_B")
+	b = !b
+	OnSelectST()
+
+	GotoState("Obsidian_SunlightFix_B")
+	b = fiss.loadBool("Obsidian_SunlightFix_B")
+	b = !b
+	OnSelectST()
+
+	GotoState(prevState)
+
+	String loadResult = fiss.endLoad()
+
+	If (loadResult != "")
+		ShowMessage("$Obsidian_Load_Failure", False, "$OK")
+	Else
+		ShowMessage("$Obsidian_Load_Success", False, "$OK")
+	EndIf
 EndFunction
