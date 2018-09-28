@@ -167,7 +167,7 @@ EndState
 
 State Obsidian_RemoveSpell_T
 	Event OnSelectST()
-		If (ConfigSpell && playerRef.RemoveSpell(ConfigSpell))
+		If (ConfigSpell && PlayerRef.RemoveSpell(ConfigSpell))
 			ShowMessage("$Obsidian_RemoveSpell_Success", False, "$OK")
 		Else
 			ShowMessage("$Obsidian_RemoveSpell_Failure", False, "$OK")
