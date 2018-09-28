@@ -254,11 +254,13 @@ Function BeginLoadPreset()
 	GotoState("Obsidian_SeasonsFX_B")
 	b = fiss.loadBool("Obsidian_SeasonsFX_B")
 	b = !b
+	ObsidianSeasonsFXGlobal.SetValue(b As Int)
 	OnSelectST()
 
 	GotoState("Obsidian_SunlightFix_B")
 	b = fiss.loadBool("Obsidian_SunlightFix_B")
 	b = !b
+	ObsidianSunlightFixGlobal.SetValue(b As Int)
 	OnSelectST()
 
 	GotoState(prevState)
